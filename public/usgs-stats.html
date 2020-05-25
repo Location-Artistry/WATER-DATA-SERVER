@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <Set-Cookie: ACookieAvailableCrossSite; SameSite=None;>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=\, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    
+    <style>
+    
+     
+    </style>
+
+    <title>ST JOE MI RIVER GAGES</title> 
+  </head>
+  <body>
+    <body style="background-color:#242424;">
+
+    <div id="stJoe"><h2><font color=#0049ad>ST. JOSEPH RIVER USGS GAGES</font></div>
+    <script>
+        (async () => {
+        //Pull from USGS statistic Service to find out what daily mean flow is
+        //working so far, need to work with date and then loop through all the lines!
+        //3-2-2020 pulled todays date and located daily statistics for USGS
+        //working through stats to determine current gage status
+        
+        //gets data from each USGS station via fetch
+        const currentFlow = async function () {
+            var sta_list = ["04096405"];
+            var firstime = 0, status = "", urlStart = 'https://waterservices.usgs.gov/nwis/iv/?format=json&sites=';
+            var urlEnd = '&parameterCd=00060,00065&siteStatus=all', gageObject = {}, gageList = [];
+            for (i = 0; i < sta_list.length; i++) {
+                const api_url = (urlStart + sta_list[i] + urlEnd);               
+                const response = await fetch(api_url);
+                const data = await response.json();
+                const sta_data = data.value, sta_flow = sta_data.timeSeries[0], sta_gage = sta_data.timeSeries[1], sta_flow_val = sta_flow.values[0].value[0].value;
+                gageObject = {siteName: sta_flow.sourceInfo.siteName, siteCode: sta_flow.sourceInfo.siteCode[0].value, 
+                            siteFlow: Number(sta_flow.values[0].value[0].value), gageHeight: Number(sta_gage.values[0].value[0].value),
+                            dateTime: sta_flow.values[0].value[0].dateTime, gageStatus: status
+                            }
+                gageList[i] = gageObject;
+            };
+            return gageObject;
+        };  
+
+    const gageStatus = async function (stationObject) {
+        //generate url params using USGS siteCode from stationObject
+        const urlStart = 'https://waterservices.usgs.gov/nwis/stat/?format=rdb&sites=', urlEnd = '&statReportType=daily&statTypeCd=all';
+        const api_url = (urlStart + stationObject.siteCode + urlEnd);               
+        console.log(api_url);
+        const fetchData = await fetch(api_url);
+        const dataText = await fetchData.text();
+        const dataLines = dataText.split("\n");
+        //Need to find todays date to compare current discharge level against
+        const today = new Date(), monthNum = (today.getMonth() + 1), dayNum = today.getDate(), yearNum = today.getFullYear();
+        console.log("Today's Date: " + monthNum + "-" + dayNum + "-" + yearNum);
+        const usgsLabels = {15:'LOW', 16:'MUCH BELOW NORMAL', 17:'BELOW NORMAL', 18:'BELOW NORMAL', 
+            19:'NORMAL', 20: 'NORMAL', 21:'ABOVE NORMAL', 22:'ABOVE NORMAL', 23:'MUCH ABOVE NORMAL'};
+        //start at the January 1st to match date to today's date, line 37 in the tab separated text file
+        
+        for (x=49;x<(dataLines.length-1);x++) {
+            const dataTabs = dataLines[x].split("\t");
+            console.log(`dataTabs[5]: ${dataTabs[5]} dataTabs[6]: ${dataTabs[6]}`);
+            console.log(dataTabs);
+        };
+    };    
+
+/*
+
+        let fetchData = await fetch('https://waterservices.usgs.gov/nwis/stat/?format=rdb&sites=04096405&statReportType=daily&statTypeCd=all');
+        try {
+        let dataJSON = await fetchData.text();
+        let stringLines = dataJSON.split("\n"), stringTabs = [];
+        const today = new Date(), monthNum = (today.getMonth() + 1), dayNum = today.getDate(),
+                        yearNum = today.getFullYear();
+        console.log("Today's Date: " + monthNum + "-" + dayNum + "-" + yearNum);
+        let usgsLabels = {15:'LOW', 16:'MUCH BELOW NORMAL', 17:'BELOW NORMAL', 18:'BELOW NORMAL', 
+            19:'NORMAL', 20: 'NORMAL', 21:'ABOVE NORMAL', 22:'ABOVE NORMAL', 23:'MUCH ABOVE NORMAL'}
+        for (x=36;x<stringLines.length;x++) {
+            stringTabs = stringLines[x].split("\t");
+            if (stringTabs[5] == monthNum && stringTabs[6] == dayNum) {
+                let dailyMean = Number(stringTabs[14]), usgsClass;
+                console.log("Daily Mean = " + dailyMean);
+                console.log("<5% = '45' = " + stringTabs[15])
+                //compare the value against the stats
+                for (z=15;z<24;z++){
+                console.log(stringTabs[z] + " " + current);
+                if (current > stringTabs[z]) {
+                    console.log("mean value is greater " + z);
+                }
+                else {
+                    usgsClass = z;
+                    console.log(usgsClass);
+                    for (i in usgsLabels) {
+                        console.log(usgsLabels[i]);
+                        if (i == z) {
+                            console.log("class is " + usgsLabels[i]);
+                        }
+                    };
+                return usgsLabels[i];
+                }
+            }      
+            }   
+        }
+        }
+        catch {
+            console.log("nah it didn't make it");
+        }
+    }
+    */
+    const flowStatus = await currentFlow();
+    const stationStatus = await gageStatus(flowStatus);
+    //console.log(`Station current status is: ${stationStatus}`);
+    //console.log(await flowStatus);
+    })();
+    </script> 
+  </body>
+</html> 

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <Set-Cookie: ACookieAvailableCrossSite; SameSite=None;>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=\, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    
+    <style>
+      #paMap {
+        height: 700px;
+      }
+    </style>
+
+    <title>USGS GAGE 04096405</title> 
+  </head>
+  <body>
+    <h3><font color=#0d015c> USGS GAGE SITE: <span id="siteCode"></span>
+      <br><span id="siteName"></span></font></h3>
+    <p>
+      Current Flow: <big><b><span id="siteFlow"></span> </b> </big>ft3/s<br/></b>
+    Gage Height: <big><b><span id="gageHeight"></span> </b> </big>ft<br/>
+    Date/Time: <span id="dateTime"></span><br/>  
+    Gage Status: <span id="gageStatus"></span><br/>    
+    </p>
+    <script>
+      let firstTime = true;
+      var sta_list = [04096405];
+      const water_sta_data = [];
+      var firstime = 0;
+      var status = "";
+      async function getWater() {
+        for (i = 0; i < sta_list.length; i++){
+        const api_url = ('https://waterservices.usgs.gov/nwis/iv/?format=json&sites=04096405&parameterCd=00060,00065&siteStatus=all');               
+        const response = await fetch(api_url);
+        const data = await response.json();
+        water_sta_data[i] = data.value;
+        const stj_bur_data = water_sta_data[i];
+        const stj_bur_flow = stj_bur_data.timeSeries[0];  
+        const stj_bur_gage = stj_bur_data.timeSeries[1];
+        const stj_bur_flow2 = stj_bur_flow.values[0].value[0].value;
+        
+        if (stj_bur_flow2 > 100) {
+          status = "Great!";
+        }
+       
+          document.getElementById('siteName').textContent = stj_bur_flow.sourceInfo.siteName;
+          document.getElementById('siteCode').textContent = stj_bur_flow.sourceInfo.siteCode[0].value;
+          document.getElementById('siteFlow').textContent = stj_bur_flow.values[0].value[0].value
+          document.getElementById('gageHeight').textContent = stj_bur_gage.values[0].value[0].value
+          document.getElementById('dateTime').textContent = stj_bur_flow.values[0].value[0].dateTime
+          document.getElementById('gageStatus').textContent = status;
+         
+        };
+       console.log('end'); 
+       
+      };
+      getWater();
+      setInterval(getWater, 100000);
+    </script> 
+  </body>
+</html> 

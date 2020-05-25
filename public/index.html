@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <Set-Cookie: ACookieAvailableCrossSite; SameSite=None;>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=\, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    
+    <style>
+    
+     
+    </style>
+
+    <title>ST JOE MI RIVER GAGES</title> 
+  </head>
+  <body>
+    <body style="background-color:#242424;">
+
+    <div id="stJoe"><h2><font color=#0049ad>ST. JOSEPH RIVER USGS GAGES</font></div>
+    <script>
+      let firstTime = true;
+      var sta_list = ["04096405","04097500", "04099000", "04101000", "04101500"];
+      var firstime = 0, status = "", urlStart = 'https://waterservices.usgs.gov/nwis/iv/?format=json&sites=';
+      var urlEnd = '&parameterCd=00060,00065&siteStatus=all', gageObject = {}, gageList = [];
+      //gets data from each USGS station via fetch
+      async function getWater() {
+        for (i = 0; i < sta_list.length; i++) {
+        const api_url = (urlStart + sta_list[i] + urlEnd);               
+        const response = await fetch(api_url);
+        const data = await response.json();
+        const sta_data = data.value, sta_flow = sta_data.timeSeries[0], sta_gage = sta_data.timeSeries[1], sta_flow_val = sta_flow.values[0].value[0].value;
+        //need to find daily flow stats to compare against
+        if (sta_flow_val > 100) {
+          status = "Great!";
+        }
+        //builds object to return data from multiple stations in St. Joseph River Basin
+        gageObject = {siteName: sta_flow.sourceInfo.siteName, siteCode: sta_flow.sourceInfo.siteCode[0].value, 
+                      siteFlow: sta_flow.values[0].value[0].value, gageHeight: sta_gage.values[0].value[0].value,
+                      dateTime: sta_flow.values[0].value[0].dateTime, gageStatus: status
+                     }
+        //console.log(gageObject);
+        gageList[i] = gageObject;
+        //trying to create dynamic page elements
+        pageDisplay = () => {
+        var para = document.createElement("P")
+        para.innerText = "Name: " + gageObject.siteName + "\n Site Code: " + gageObject.siteCode +
+        " Current Flow: " + gageObject.siteFlow + " Gage Height: " + gageObject.gageHeight; 
+        //Future figure out CSS to bold parts of the display text
+        para.style.color = "#8fbeff";
+        document.getElementById("stJoe").appendChild(para);
+        }
+        pageDisplay();
+        };
+        console.log(gageList); 
+      };    
+    getWater();
+    //setInterval(getWater, 100000);
+    </script> 
+  </body>
+</html> 
