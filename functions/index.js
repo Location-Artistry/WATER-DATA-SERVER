@@ -1,23 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <Set-Cookie: ACookieAvailableCrossSite; SameSite=None;>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=\, initial-scale=1.0" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    
-    <style>
-     
-    </style>
+require('dotenv').config();
+const firebaseConfig = {
+  apiKey: process.env.apiKey,
+  authDomain: process.env.authDomain,
+  databaseURL: process.env.databaseURL,
+  projectId: process.env.projectId,
+  storageBucket: process.env.storageBucket,
+  messagingSenderId: process.env.messagingSenderId,
+  appId: process.env.appId,
+  measurementId: process.env.measurementId
+};  
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+admin.initializeApp(firebaseConfig);
 
-    <title>ST JOE MI RIVER GAGES</title> 
-  </head>
-  <body>
-    <body style="background-color:#242424;">
+const fetch = require('node-fetch');
+const express = require('express');
+const cors = require('cors');
+const app = express();
+app.use(cors({ origin: true }))
 
-    <div id="stJoe"><h2><font color=#0049ad>ST. JOSEPH RIVER USGS GAGES</font></div>
-    <script>
-        (async () => {
+app.get("/usgs-data-live/st-joseph-basin/", async (req, res) => {
+        //copied from usgs-stats2.html
         //5-26 working great, return station object and status, need to process multiple stations
         //5-27 pulling from all availble gage stations in St Joe Basin, returning JSON with current and daily stats
         const currentFlow = async function () {
@@ -37,7 +40,6 @@
             };
             return gageList;
         };  
-
     const gageStatus = async function (stationList) {
         const stationData = []; //Final array of data for each station in stationObject List
         for (z in stationList) {
@@ -74,10 +76,19 @@
         return stationData;
     };    
     
-    const flowStatus = await currentFlow();
-    const stationStatus = await gageStatus(flowStatus);
-    console.log(await stationStatus);
-    })();
-    </script> 
-  </body>
-</html> 
+    try {
+        const flowStatus = await currentFlow();
+        const stationStatus = await gageStatus(flowStatus);
+        res
+        .status(200)
+        .send(stationStatus);
+    }
+    catch (err) {
+        console.error("FAIL TO GET WATER DATA");
+        res
+        .status(400)
+        .send('ERROR MESSAGE FAILED TO FECTH USGS DATA ST JOSEPH RIVER');
+    }
+});
+
+exports.api = functions.runWith({ memory: '1GB' }).https.onRequest(app);
