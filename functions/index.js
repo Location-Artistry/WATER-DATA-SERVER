@@ -43,7 +43,6 @@ app.get("/usgs-data-live/st-joseph-basin/", async (req, res) => {
     const gageStatus = async function (stationList) {
         const stationData = []; //Final array of data for each station in stationObject List
         for (z in stationList) {
-            console.log(z, stationList[z]);
             //generate url params using USGS siteCode from stationObject
             const urlStart = 'https://waterservices.usgs.gov/nwis/stat/?format=rdb&sites=', urlEnd = '&statReportType=daily&statTypeCd=all';
             const api_url = (urlStart + stationList[z].siteCode + urlEnd);               
@@ -54,7 +53,7 @@ app.get("/usgs-data-live/st-joseph-basin/", async (req, res) => {
             let dailyMean = 0, dailyStats = {"mean":0};
             //Need to find todays date to compare current discharge level against
             const today = new Date(), monthNum = (today.getMonth() + 1), dayNum = today.getDate(), yearNum = today.getFullYear();
-            console.log("Today's Date: " + monthNum + "-" + dayNum + "-" + yearNum);
+            //console.log("Today's Date: " + monthNum + "-" + dayNum + "-" + yearNum);
             const usgsLabels = {"p05":'LOW', "p10":'MUCH BELOW NORMAL', "p20":'BELOW NORMAL', "p25":'BELOW NORMAL', 
                 "p50":'NORMAL', "p75": 'NORMAL', "p80":'ABOVE NORMAL', "p90":'ABOVE NORMAL', "p95":'MUCH ABOVE NORMAL'};
                 //start at the January 1st to match date to today's date, line 50 in the tab separated text file
@@ -84,10 +83,10 @@ app.get("/usgs-data-live/st-joseph-basin/", async (req, res) => {
         .send(stationStatus);
     }
     catch (err) {
-        console.error("FAIL TO GET WATER DATA");
+        console.error("FAILer TO GET WATER DATA");
         res
         .status(400)
-        .send('ERROR MESSAGE FAILED TO FECTH USGS DATA ST JOSEPH RIVER');
+        .send('ERROR MESSAGE FAILED TO FETCH USGS DATA ST JOSEPH RIVER');
     }
 });
 

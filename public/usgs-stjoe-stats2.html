@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <Set-Cookie: ACookieAvailableCrossSite; SameSite=None;>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=\, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <style>
+      #stJoe {
+        border: 5px solid #0069cc;
+      }
+   
+    </style>
+
+    <title>ST JOE MI RIVER GAGES</title> 
+  </head>
+  <body>
+    <body style="background-color:#242424;">
+
+    <script>
+        (async () => {
+            //get live st Joseph River gage station data and daily stats from custom project endpoint /usgs-data-live/st-joseph-basin/
+            const stJoeFetch = await fetch('/usgs-data-live/st-joseph-basin/');
+            const stJoeData = await stJoeFetch.json();
+            const stJoeStations = {'threeRivers':4097500,'burlington':4096405,'niles':4101500};
+            for(h in stJoeStations){
+              //console.log(h, stJoeStations[h])
+              };
+            console.log(stJoeData);
+            //setup dictonaries for dynamic CSS styling
+            const divList = ['threeRivers','burlington','niles'];
+            const textList = {'threeRivers':"ST. JOSEPH RIVER \n THREE RIVERS, MI",'burlington':"ST. JOSEPH RIVER \n BURLINGTON, MI",'niles':"ST. JOSEPH RIVER \n NILES, MI"};
+            const headStyles = {'threeRivers': {'fontSize':'35px','color':'#0069cc','margin':'4px','lineHeight':'35px'},
+                               'burlington': {'fontSize':'35px','color':'#0069cc','margin':'4px','lineHeight':'35px'},
+                               'niles': {'fontSize':'35px','color':'#0069cc','margin':'4px','lineHeight':'35px'}};
+            const borderStyles = {"p05":'5px solid red', "p10":'5px solid redorange', "p20":'5px solid orange', "p25":'5px solid orange', "p50":'5px solid green', 
+                                  "p75": '5px solid green', "p80":'5px solid blue', "p90":'5px solid darkblue', "p95":'5px solid black'};
+            const linesList = [{'status':`Current Status:`},{'statusText':`ABOVE NORMAL`},{'flowInfo':`FLOW: 500cfs HEIGHT: 6.2ft`},
+                                {'dailyStats':`Daily Mean: 300cfs Min: 139cfs Max: 732cfs`}];
+            //para.innerText = "Flow: " + stjoeData[2].stationInfo.siteFlow + "\n STATUS:" + stjoeData[2].stationInfo.gageStatus;
+            //const linesList = [`Current Status:`,`ABOVE NORMAL`,`FLOW: 500cfs HEIGHT: 6.2ft`,`Daily Mean: 300cfs Min: 139cfs Max: 732cfs`];
+            const textStyles = {'status': {'color':'#045c72','fontSize':'15px','margin':'0px','lineHeight':'15px'}, 
+                               'statusText': {'color':'#da1c0f','fontSize':'28px','margin':'7px','lineHeight':'32px'},
+                               'flowInfo': {'color':'#8fbeff','fontSize':'20px','margin':'0px','lineHeight':'25px'}, 
+                               'dailyStats': {'color':'#8fbeff','fontSize':'18px','margin':'2px','lineHeight':'25px'}};   
+                                                    
+            for(i in stJoeStations){
+                console.log(i);
+                const gageDiv = document.createElement("DIV");
+                gageDiv.style.textAlign = 'center', gageDiv.style.fontFamily = 'Arial, Helvetica, sans-serif';
+                gageDiv.style.border = borderStyles.p90;
+                document.body.appendChild(gageDiv);
+                const gageHead = document.createElement("H1");
+                gageHead.innerText = textList[i];
+                for (z in headStyles[i]){
+                    gageHead.style[z] = headStyles[i][z];
+                };
+                gageDiv.appendChild(gageHead);
+                for(x in linesList){
+                    const linesText = document.createElement("P");
+                    const linesKeys = Object.keys(linesList[x])[0], linesValues = Object.values(linesList[x])[0];
+                    for(y in textStyles[linesKeys]){
+                        //console.log(y, textStyles[linesKeys][y]);
+                        linesText.style[y] = textStyles[linesKeys][y];
+                    };                    
+                    linesText.innerText = linesValues, gageDiv.appendChild(linesText);
+                };
+            };
+
+            /*
+            const divList = ['threeRivers','burlington','niles'];
+            const divStyles = ['center','Arial, Helvetica, sans-serif'];
+            var threeRivers = document.createElement("DIV"), burlington = document.createElement("DIV"), niles = document.createElement("DIV")
+            document.body.appendChild(threeRivers), document.body.appendChild(burlington), document.body.appendChild(niles);
+            const threeRivHead = document.createElement("H1"), burlingHead = document.createElement("H1"), nilesHead = document.createElement("H1");
+            threeRivHead.innerText = "ST. JOSEPH RIVER \n THREE RIVERS, MI", burlingHead.innerText = "ST. JOSEPH RIVER \n BURLINGTON, MI",
+            nilesHead.innerText = "ST. JOSEPH RIVER \n BURLINGTON, MI",
+            threeRivHead.style.fontSize = "40px", threeRivHead.style.color = "#0069cc", threeRivHead.style.margin = "5px", threeRivHead.style.lineHeight = "40px";
+            burlingHead.style.fontSize = "30px", burlingHead.style.color = "#0069cc", burlingHead.style.margin = "3px", burlingHead.style.lineHeight = "33px";
+            nilesHead.style.fontSize = "30px", nilesHead.style.color = "#0069cc", nilesHead.style.margin = "3px", nilesHead.style.lineHeight = "33px";
+            const borderStyles = {"p05":'5px solid red', "p10":'5px solid redorange', "p20":'5px solid orange', "p25":'5px solid orange', 
+                                 "p50":'5px solid green', "p75": '5px solid green', "p80":'5px solid blue', "p90":'5px solid darkblue', "p95":'5px solid black'};
+            threeRivers.style.textAlign = 'center', threeRivers.style.
+                                 
+            for (i in divList){
+                
+            };                           
+            threeRivers.style.border = borderStyles.p05;
+            burlington.style.border = borderStyles.p80;
+            niles.style.border = borderStyles.p95;
+            threeRivers.appendChild(threeRivHead), burlington.appendChild(burlingHead), niles.appendChild(nilesHead);
+
+            
+            const header1 = document.createElement("H1");
+            header1.innerText = "ST. JOSEPH RIVER \n THREE RIVERS, MI", 
+            header1.style.fontSize = "40px", header1.style.color = "#0049ad", header1.style.margin = "5px", header1.style.lineHeight = "40px";
+            stJoe.appendChild(header1);
+        
+            let para = document.createElement("P"), para1 = document.createElement("P"), para2 = document.createElement("P"), para3 = document.createElement("P");
+            //para.innerText = "Flow: " + stjoeData[2].stationInfo.siteFlow + "\n STATUS:" + stjoeData[2].stationInfo.gageStatus;
+            const paraList = ['para','para1','para2','para3'];
+            const textList = ["Current Status:", "MUCH ABOVE NORMAL",`FLOW: 4090cfs HEIGHT: 12.3ft`,`Daily Mean: 234cfs \u00A0 Min: 53cfs \u00A0 Max: 839cfs`];
+            const styleList = ['color','fontSize','padding','margin','lineHeight']
+            const textStyles = {'para': ['#045c72','20px','-30px','0px','20px'], 'para1': ['#da1c0f','33px','-30px','10px','30px'],
+                              'para2': ['#8fbeff','25px','-30px','5px','30px'], 'para3':['#8fbeff','20px','-30px','0px','30px']};
+            for(x in paraList){
+              const para = document.createElement("P");
+              para.innerText = textList[x];
+              for(z in textStyles[paraList[x]]){
+                para.style[styleList[z]] = textStyles[paraList[x]][z];
+              }
+              document.getElementById("stJoe").appendChild(para);
+            }
+            var stJoe2 = document.createElement("div"); 
+            const header2 = document.createElement("H1");
+            header2.innerText = "ST. JOSEPH RIVER \n THREE RIVERS, MI", 
+            stJoe2.appendChild(header2);
+            stJoe2.style.color = '#8fbeff';
+            document.body.appendChild(stJoe2);
+          
+            //document.getElementById("stJoe").appendChild(para1);
+            //document.getElementById("stJoe").appendChild(para);
+            //document.getElementById("stJoe").appendChild(para2);
+
+            //para2.innerText = "Flow: " + stjoeData[2].stationInfo.siteFlow + "\n STATUS:" + stjoeData[2].stationInfo.gageStatus;
+            // + "\n Site Code: " + gageObject.siteCode +
+            //" Current Flow: " + gageObject.siteFlow + " Gage Height: " + gageObject.gageHeight; 
+            //Future figure out CSS to bold parts of the display text
+            //console.log(stjoeData);
+            */
+        })();
+    </script> 
+  </body>
+</html> 
