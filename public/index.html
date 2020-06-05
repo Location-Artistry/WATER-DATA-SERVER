@@ -5,10 +5,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=\, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    
     <style>
-    
-     
+      #stJoe {
+        border: 5px solid #0069cc;
+      }
+   
     </style>
 
     <title>ST JOE MI RIVER GAGES</title> 
@@ -16,45 +17,67 @@
   <body>
     <body style="background-color:#242424;">
 
-    <div id="stJoe"><h2><font color=#0049ad>ST. JOSEPH RIVER USGS GAGES</font></div>
     <script>
-      let firstTime = true;
-      var sta_list = ["04096405","04097500", "04099000", "04101000", "04101500"];
-      var firstime = 0, status = "", urlStart = 'https://waterservices.usgs.gov/nwis/iv/?format=json&sites=';
-      var urlEnd = '&parameterCd=00060,00065&siteStatus=all', gageObject = {}, gageList = [];
-      //gets data from each USGS station via fetch
-      async function getWater() {
-        for (i = 0; i < sta_list.length; i++) {
-        const api_url = (urlStart + sta_list[i] + urlEnd);               
-        const response = await fetch(api_url);
-        const data = await response.json();
-        const sta_data = data.value, sta_flow = sta_data.timeSeries[0], sta_gage = sta_data.timeSeries[1], sta_flow_val = sta_flow.values[0].value[0].value;
-        //need to find daily flow stats to compare against
-        if (sta_flow_val > 100) {
-          status = "Great!";
-        }
-        //builds object to return data from multiple stations in St. Joseph River Basin
-        gageObject = {siteName: sta_flow.sourceInfo.siteName, siteCode: sta_flow.sourceInfo.siteCode[0].value, 
-                      siteFlow: sta_flow.values[0].value[0].value, gageHeight: sta_gage.values[0].value[0].value,
-                      dateTime: sta_flow.values[0].value[0].dateTime, gageStatus: status
-                     }
-        //console.log(gageObject);
-        gageList[i] = gageObject;
-        //trying to create dynamic page elements
-        pageDisplay = () => {
-        var para = document.createElement("P")
-        para.innerText = "Name: " + gageObject.siteName + "\n Site Code: " + gageObject.siteCode +
-        " Current Flow: " + gageObject.siteFlow + " Gage Height: " + gageObject.gageHeight; 
-        //Future figure out CSS to bold parts of the display text
-        para.style.color = "#8fbeff";
-        document.getElementById("stJoe").appendChild(para);
-        }
-        pageDisplay();
-        };
-        console.log(gageList); 
-      };    
-    getWater();
-    //setInterval(getWater, 100000);
+        (async () => {
+            //get live st Joseph River gage station data and daily stats from custom project endpoint /usgs-data-live/st-joseph-basin/
+            const stJoeFetch = await fetch("https://usgs-gage.firebaseapp.com/usgs-data-live/st-joseph-basin/");
+            //const stJoeFetch = await fetch("/usgs-data-live/st-joseph-basin/");
+            const stJoeData = await stJoeFetch.json();
+            const stJoeStations = {'threeRivers':'04097500','burlington':'04096405','niles':'04101500'};
+            console.log(stJoeData);
+            //setup dictonaries for dynamic CSS styling
+            const divList = ['threeRivers','burlington','niles'];
+            const textList = {'threeRivers':"ST. JOSEPH RIVER \n THREE RIVERS, MI",'burlington':"ST. JOSEPH RIVER \n BURLINGTON, MI",'niles':"ST. JOSEPH RIVER \n NILES, MI"};
+            const headStyles = {'threeRivers': {'fontSize':'35px','color':'#0069cc','margin':'4px','lineHeight':'35px'},
+                               'burlington': {'fontSize':'35px','color':'#0069cc','margin':'4px','lineHeight':'35px'},
+                               'niles': {'fontSize':'35px','color':'#0069cc','margin':'4px','lineHeight':'35px'}};
+            const borderStyles = {"p05":'7px solid red', "p10":'7px solid redorange', "p20":'7px solid orange', "p25":'7px solid orange', "p50":'7px solid green', 
+                                  "p75": '7px solid green', "p80":'7px solid blue', "p90":'7px solid darkblue', "p95":'7px solid black'};
+            const linesList = [{'status':`Current Status:`},{'statusText':`ABOVE NORMAL`},{'flowInfo':`FLOW: 500cfs HEIGHT: 6.2ft`},
+                                {'dailyStats':`Daily Mean: 300cfs Min: 139cfs Max: 732cfs`}];
+            
+            //const textStyles = {'status': {'color':'#045c72','fontSize':'15px','margin':'0px','lineHeight':'15px'}, 
+            //                   'statusText': {'color':statusColor[percentStatus],'fontSize':'28px','margin':'7px','lineHeight':'32px'},
+            //                   'flowInfo': {'color':'#8fbeff','fontSize':'20px','margin':'0px','lineHeight':'25px'}, 
+            //                   'dailyStats': {'color':'#8fbeff','fontSize':'18px','margin':'2px','lineHeight':'25px'}};   
+            const statusColor = {"p05":'red', "p10":'redorange', "p20":'orange', "p25":'orange', "p50":'green', 
+                                 "p75": 'green', "p80":'blue', "p90":'darkblue', "p95":'black'};
+                                                    
+            for(i in stJoeStations){
+                console.log(i, stJoeStations[i]);
+                const gageStatus = stJoeData[stJoeStations[i]].stationInfo.gageStatus, siteFlow = stJoeData[stJoeStations[i]].stationInfo.siteFlow;
+                const gageHeight = stJoeData[stJoeStations[i]].stationInfo.gageHeight, dailyMean = stJoeData[stJoeStations[i]].dailyStats.mean;
+                const dailyMin = stJoeData[stJoeStations[i]].dailyStats.minFlow, dailyMax = stJoeData[stJoeStations[i]].dailyStats.maxFlow;
+                const percentStatus = stJoeData[stJoeStations[i]].stationInfo.gagePercent;
+                const linesList = [{'status':`Current Status (siteID:${stJoeStations[i]}):`},{'statusText':`${gageStatus}`},{'flowInfo':`FLOW: ${siteFlow} cfs HEIGHT: ${gageHeight} ft`},
+                                   {'dailyStats':`Daily Mean: ${dailyMean} cfs Min: ${dailyMin} cfs Max: ${dailyMax} cfs`}];
+                const textStyles = {'status': {'color':'#045c72','fontSize':'15px','margin':'0px','lineHeight':'15px'}, 
+                'statusText': {'color':statusColor[percentStatus],'fontSize':'30px','margin':'7px','lineHeight':'32px'},
+                'flowInfo': {'color':'#8fbeff','fontSize':'20px','margin':'0px','lineHeight':'25px'}, 
+                'dailyStats': {'color':'#8fbeff','fontSize':'18px','margin':'2px','lineHeight':'25px'}};  
+                // stjoeData[2].stationInfo.gageStatus
+                const gageDiv = document.createElement("DIV");
+                gageDiv.style.textAlign = 'center', gageDiv.style.fontFamily = 'Arial, Helvetica, sans-serif';
+                gageDiv.style.border = borderStyles[percentStatus];
+                document.body.appendChild(gageDiv);
+                const gageHead = document.createElement("H1");
+                gageHead.innerText = textList[i];
+                for (z in headStyles[i]){
+                    gageHead.style[z] = headStyles[i][z];
+                };
+                gageDiv.appendChild(gageHead);
+                for(x in linesList){
+                    const linesText = document.createElement("P");
+                    const linesKeys = Object.keys(linesList[x])[0], linesValues = Object.values(linesList[x])[0];
+                    for(y in textStyles[linesKeys]){
+                        //console.log(y, textStyles[linesKeys][y]);
+                        linesText.style[y] = textStyles[linesKeys][y];
+                    };                    
+                    linesText.innerText = linesValues, gageDiv.appendChild(linesText);
+                };
+            };
+
+        })();
     </script> 
   </body>
 </html> 

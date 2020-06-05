@@ -17,11 +17,9 @@ const fetch = require('node-fetch');
 const express = require('express');
 const cors = require('cors');
 const app = express();
-app.use(cors({ origin: true }))
+app.use(cors());
 
 app.get("/usgs-data-live/st-joseph-basin/", async (req, res) => {
-        //copied from usgs-stats2.html
-        //5-26 working great, return station object and status, need to process multiple stations
         //5-27 pulling from all availble gage stations in St Joe Basin, returning JSON with current and daily stats
         const currentFlow = async function () {
             const sta_list = ["04096405","04096515","04097500","040975299","04097540","04099000","04100500","04101000","04101500","04101535","04101800","04102500"];
@@ -41,10 +39,13 @@ app.get("/usgs-data-live/st-joseph-basin/", async (req, res) => {
             return gageList;
         };  
     const gageStatus = async function (stationList) {
-        const stationData = []; //Final array of data for each station in stationObject List
+        //refactoring array into object for ease of station referencing on frontend
+        const stationData = {};
         for (z in stationList) {
             //generate url params using USGS siteCode from stationObject
-            const urlStart = 'https://waterservices.usgs.gov/nwis/stat/?format=rdb&sites=', urlEnd = '&statReportType=daily&statTypeCd=all';
+            // const urlStart = 'https://waterservices.usgs.gov/nwis/stat/?format=rdb&sites=', urlEnd = '&statReportType=daily&statTypeCd=all';
+            // https://waterservices.usgs.gov/nwis/stat/?format=rdb&sites=04101500&statReportType=daily&statTypeCd=all&parameterCd=00060
+            const urlStart = 'https://waterservices.usgs.gov/nwis/stat/?format=rdb&sites=', urlEnd = '&statReportType=daily&statTypeCd=all&parameterCd=00060';
             const api_url = (urlStart + stationList[z].siteCode + urlEnd);               
             console.log(api_url);
             const fetchData = await fetch(api_url);
@@ -69,8 +70,8 @@ app.get("/usgs-data-live/st-joseph-basin/", async (req, res) => {
                 stationList[z].siteFlow >= Object.entries(dailyStats)[x][1]? (stationList[z].gagePercent = Object.entries(dailyStats)[x][0],
                 stationList[z].gageStatus = usgsLabels[stationList[z].gagePercent]):"";
             }
-            const stationRecord = {"ID": Number(stationList[z].siteCode), "stationInfo": stationList[z], "dailyStats": dailyStats};
-            stationData[z] = stationRecord;
+            const stationRecord = {"ID": stationList[z].siteCode, "stationInfo": stationList[z], "dailyStats": dailyStats};
+            stationData[stationRecord.ID] = stationRecord;
         };
         return stationData;
     };    
@@ -90,4 +91,4 @@ app.get("/usgs-data-live/st-joseph-basin/", async (req, res) => {
     }
 });
 
-exports.api = functions.runWith({ memory: '1GB' }).https.onRequest(app);
+exports.api = functions.runWith({ memory: '2GB' }).https.onRequest(app);
