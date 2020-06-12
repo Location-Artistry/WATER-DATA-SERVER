@@ -20,8 +20,9 @@
     <script>
         (async () => {
             //get live st Joseph River gage station data and daily stats from custom project endpoint /usgs-data-live/st-joseph-basin/
-            const stJoeFetch = await fetch("https://usgs-gage.firebaseapp.com/usgs-data-live/st-joseph-basin/");
-            //const stJoeFetch = await fetch("/usgs-data-live/st-joseph-basin/");
+            const stationList = '04097500,04096405,04101500';
+            const stJoeFetch = await fetch(`https://usgs-gage.firebaseapp.com/usgs-data-live/st-joseph-basin/${stationList}`);
+            //const stJoeFetch = await fetch(`http://localhost:5000/usgs-data-live/st-joseph-basin/${stationList}`);
             const stJoeData = await stJoeFetch.json();
             const stJoeStations = {'threeRivers':'04097500','burlington':'04096405','niles':'04101500'};
             console.log(stJoeData);
