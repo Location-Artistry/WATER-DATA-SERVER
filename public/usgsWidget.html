@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USGS GAGE WIDGET NHBP</title>
+</head>
+<body>
+    <script>
+    (async () => {
+
+        class Widget {
+            constructor(id, styles) {
+                this.div = document.createElement("DIV");
+                this.type = 'Widget';
+                this.id = id;
+                styles != null ? styles.forEach(d => this.div.style[Object.keys(d)]=Object.values(d)) : '';
+            }
+            type() {return this.type};
+            id() {return this.id};
+            addText(size, txt, styles) {
+                this.text = document.createElement(size);
+                this.text.innerText = txt; 
+                styles != null ? styles.forEach(d => this.text.style[Object.keys(d)]=Object.values(d)) : '';
+                this.div.appendChild(this.text);
+            }
+            addBorder(styles) {
+                this.div.style.border = styles;
+            }
+        };
+
+        const getData = async (stations) =>{
+            const rawData = await fetch(`https://usgs-gage.firebaseapp.com/usgs-data-live/gageGeo/${stations}`);
+            return await rawData.json();
+        };
+
+        const getGage = async (gage) => {
+            const props = gage.properties;
+            const statCol = {"p05":'red', "p10":'redorange', "p20":'orange', "p25":'orange', "p50":'green', "p75": 'green', "p80":'blue', "p90":'darkblue', "p95":'#00034d'};
+            const statBor = {"p05":'13px solid red', "p10":'13px solid redorange', "p20":'13px solid orange', "p25":'13px solid orange', "p50":'13px solid green', "p75": '13px solid green', "p80":'13px solid blue', "p90":'13px solid darkblue', "p95":'13px solid #00034d'};
+            const divStyle = [{'textAlign':'center'}, {'fontFamily':'Arial, Helvetica, sans-serif'},{'background-color':'#2e2e2e'},{'margin':'0px'},{'padding':'10px'}];
+            const txtStyles = [[{'color':'#0069cc'},{'margin':'4px'},{'lineHeight':'35px'}],[{'color':'#045c72'},{},{'margin':'0px'}, {'lineHeight':'15px'}],
+                [{'color':statCol[props.stationInfo.gagePercent]},{},{'margin':'7px'}, {'lineHeight':'32px'}], [{'color':'#8fbeff'},{'fontSize':'20px'},{'margin':'0px'},{'lineHeight':'25px'}],
+                [{'color':'#8fbeff'},{'fontSize':'18px'},{'margin':'2px'},{'lineHeight':'25px'}]];
+            const txtSizes = ['H1','P','H1','P','P'];
+            const txt = [props.info, (`Current Status for USGS Gage: ${props.ID}`),props.stationInfo.gageStatus, (`FLOW: ${props.stationInfo.siteFlow} cfs - HEIGHT: ${props.stationInfo.gageHeight} ft`),
+                (`Daily Mean: ${props.dailyStats.mean} cfs - Min: ${props.dailyStats.minFlow} cfs - Max: ${props.dailyStats.maxFlow} cfs`) ];
+            
+            const widget1 = new Widget(props.ID, divStyle);
+            widget1.addBorder(statBor[props.stationInfo.gagePercent]);
+            txtStyles.forEach( (d,i) => widget1.addText(txtSizes[i],txt[i],d));
+            document.body.appendChild(widget1.div);
+        };
+
+        const drawWidgets = async (data) => {      
+            data.features.forEach(d => getGage(d));
+        };
+        const allStations = '04096405,04096515,04097500,040975299,04097540,04099000,04100500,04101000,04101500,04101535,04101800,04102500,04099750';
+        const stJoeMain = '04097500,04096405,04101500';
+        const data = await getData(stJoeMain);
+        await drawWidgets(data);
+
+    }) ();        
+    </script>
+    
+</body>
+</html>
+
